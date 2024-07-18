@@ -81,7 +81,7 @@ func inputFileReader(fileName string) (*Tetrominos, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
-	if linesRead != 0 {
+	if linesRead != 0 || len(tetrominos) == 0 {
 		return nil, ErrInvalidTetFile
 	}
 	return &Tetrominos{tet: tetrominos}, nil
