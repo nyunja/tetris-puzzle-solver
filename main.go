@@ -13,6 +13,10 @@ type Tetrominos struct {
 	tet [][]string
 }
 
+type TetSolution struct {
+	tetSolution [][]string
+}
+
 var (
 	ErrInvalidTetSize = errors.New("tetromino should have 4 lines of 4 characters each")
 	ErrInvalidTetFile = errors.New("invalid tetromino file")
@@ -36,7 +40,12 @@ func main() {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(cleanTetrominos)
+	solvedTetrominos, err := solveTetris(cleanTetrominos)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Println(solvedTetrominos)
 }
 
 func inputFileReader(fileName string) (*Tetrominos, error) {
@@ -94,31 +103,72 @@ func inputFileReader(fileName string) (*Tetrominos, error) {
 	return &Tetrominos{tet: tetrominos}, nil
 }
 
-func solveTetris(tet *Tetrominos) (*Tetrominos, error) {
-	var width, height int
+func solveTetris(tet *Tetrominos) (*TetSolution, error) {
+	var maxWidth, maxHeight int
 	for _, tetromino := range tet.tet {
-		height += len(tetromino)
-		width += len(tetromino[0])
+		maxHeight += len(tetromino)
+		maxWidth += len(tetromino[0])
 	}
-	length := int(math.Sqrt(float64(width*height)))
-	var tetSolution [][]string
+	length := int(math.Sqrt(float64(maxWidth * maxHeight)))
+	tetSolution := make([][]string, length)
 	for i := 0; i < length; i++ {
+		tetSolution[i] = make([]string, length)
 		for j := 0; j < length; j++ {
 			tetSolution[i][j] = "."
 		}
 	}
-	return &Tetrominos{tet: tetSolution}, nil
+	println("solve tetris: ")
+	for _, tetromino := range tet.tet {
+		for k := 0; k < len(tetSolution); k++ {
+			for m := 0; m < len(tetSolution); m++ {
+				for i := 0; i < len(tetromino); i++ {
+					for j := 0; j < len(tetromino[0]); j++ {
+
+						if k+len(tetromino) > len(tetSolution) || m+len(tetromino[0]) > len(tetromino[0]) {
+							break
+						}
+						if tetromino[i][j] != '.' && tetSolution[k+i][m+j] != "." {
+							continue
+						}
+						if tetromino[i][j] != '.' && tetSolution[k+i][m+j] == "." {
+							tetSolution[k+i][m+j] = string(tetromino[i][j])
+						}
+						// fmt.Printf("%s %s\n", string(tetromino[i][j]), tetSolution[k+i][m+j])
+					}
+				}
+
+			}
+		}
+	}
+	return &TetSolution{tetSolution: tetSolution}, nil
+}
+
+func fits(tetromino [][]string, tetSolution [][]string, x, y int) bool {
+	// check if the tetromino can fit in the space left in the tet solution
+	if y+len(tetromino) > len(tetSolution) || x+len(tetromino[0]) > len(tetSolution[0]) {
+		return false
+	}
+
+	// chcek for overlaps
+	for i := 0; i < len(tetromino); i++ {
+		for j := 0; j < len(tetromino[0]); j++ {
+			if tetromino[i][j] != "." && tetSolution[y+i][x+j] != "." {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func cleanTetromino(tet *Tetrominos) (*Tetrominos, error) {
 	var tetrominos [][]string
 	for _, tetromino := range tet.tet {
 		if !isValidTetromino(tetromino) {
-			return	nil, ErrInvalidTetType
+			return nil, ErrInvalidTetType
 		}
 		tetrominos = append(tetrominos, removeDotLines(tetromino))
 	}
-	return &Tetrominos{tet: tetrominos }, nil
+	return &Tetrominos{tet: tetrominos}, nil
 }
 
 func removeDotLines(tetromino []string) []string {
@@ -130,7 +180,7 @@ func removeDotLines(tetromino []string) []string {
 		}
 	}
 	fmt.Println("horizontal: ", tetromino)
-	
+
 	for x := 0; x < len(tetromino[0]); x++ {
 		fmt.Println(tetromino)
 		isDotColumn := true
@@ -140,7 +190,7 @@ func removeDotLines(tetromino []string) []string {
 				break
 			}
 		}
-		
+
 		if isDotColumn {
 			for y := 0; y < len(tetromino); y++ {
 				tetromino[y] = tetromino[y][:x] + tetromino[y][x+1:]
@@ -159,19 +209,19 @@ func isValidTetromino(tetromino []string) bool {
 				if y > 0 && tetromino[y-1][x] != '.' {
 					connection++
 				}
-				if y < len(tetromino) -1 && tetromino[y+1][x] != '.' {
+				if y < len(tetromino)-1 && tetromino[y+1][x] != '.' {
 					connection++
 				}
 				if x > 0 && tetromino[y][x-1] != '.' {
 					connection++
 				}
-				if x < len(tetromino[y]) -1 && tetromino[y][x+1] != '.' {
+				if x < len(tetromino[y])-1 && tetromino[y][x+1] != '.' {
 					connection++
 				}
 			}
 		}
 	}
-	
+
 	if connection >= 6 && connection <= 8 {
 		return true
 	}
