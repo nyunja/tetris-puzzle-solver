@@ -45,7 +45,9 @@ func main() {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(solvedTetrominos)
+	for _, t := range solvedTetrominos.tetSolution {
+		fmt.Println(t)
+	}
 }
 
 func inputFileReader(fileName string) (*Tetrominos, error) {
@@ -103,12 +105,17 @@ func inputFileReader(fileName string) (*Tetrominos, error) {
 	return &Tetrominos{tet: tetrominos}, nil
 }
 
-func solveTetris(tet *Tetrominos) (*TetSolution, error) {
-	var maxWidth, maxHeight int
+func calculateInitialGridSize(tet *Tetrominos) (int,int) {
+	maxWidth, maxHeight := 0, 0
 	for _, tetromino := range tet.tet {
-		maxHeight += len(tetromino)
-		maxWidth += len(tetromino[0])
+		maxHeight = max(maxHeight, len(tetromino))
+		maxWidth = max(maxWidth, len(tetromino[0]))
 	}
+	return maxWidth, maxHeight
+}
+
+func solveTetris(tet *Tetrominos) (*TetSolution, error) {
+	var maxWidth, maxHeight int = calculateInitialGridSize(tet)
 	length := int(math.Sqrt(float64(maxWidth * maxHeight)))
 	tetSolution := make([][]string, length)
 	for i := 0; i < length; i++ {
@@ -121,29 +128,29 @@ func solveTetris(tet *Tetrominos) (*TetSolution, error) {
 	for _, tetromino := range tet.tet {
 		for k := 0; k < len(tetSolution); k++ {
 			for m := 0; m < len(tetSolution); m++ {
-				for i := 0; i < len(tetromino); i++ {
-					for j := 0; j < len(tetromino[0]); j++ {
-
-						if k+len(tetromino) > len(tetSolution) || m+len(tetromino[0]) > len(tetromino[0]) {
-							break
+				if fits(tetromino, tetSolution, m, k) {
+					for i := 0; i < len(tetromino); i++ {
+						for j := 0; j < len(tetromino[0]); j++ {
+							if k+len(tetromino) > len(tetSolution) || m+len(tetromino[0]) > len(tetromino[0]) {
+								break
+							}
+							// if tetromino[i][j] != '.' && tetSolution[k+i][m+j] != "." {
+							// 	continue
+							// }
+							if tetromino[i][j] != '.' && tetSolution[k+i][m+j] == "." {
+								tetSolution[k+i][m+j] = string(tetromino[i][j])
+							}
+							// fmt.Printf("%s %s\n", string(tetromino[i][j]), tetSolution[k+i][m+j])
 						}
-						if tetromino[i][j] != '.' && tetSolution[k+i][m+j] != "." {
-							continue
-						}
-						if tetromino[i][j] != '.' && tetSolution[k+i][m+j] == "." {
-							tetSolution[k+i][m+j] = string(tetromino[i][j])
-						}
-						// fmt.Printf("%s %s\n", string(tetromino[i][j]), tetSolution[k+i][m+j])
 					}
 				}
-
 			}
 		}
 	}
 	return &TetSolution{tetSolution: tetSolution}, nil
 }
 
-func fits(tetromino [][]string, tetSolution [][]string, x, y int) bool {
+func fits(tetromino []string, tetSolution [][]string, x, y int) bool {
 	// check if the tetromino can fit in the space left in the tet solution
 	if y+len(tetromino) > len(tetSolution) || x+len(tetromino[0]) > len(tetSolution[0]) {
 		return false
@@ -151,8 +158,8 @@ func fits(tetromino [][]string, tetSolution [][]string, x, y int) bool {
 
 	// chcek for overlaps
 	for i := 0; i < len(tetromino); i++ {
-		for j := 0; j < len(tetromino[0]); j++ {
-			if tetromino[i][j] != "." && tetSolution[y+i][x+j] != "." {
+		for j := 0; j < len(tetromino[i]); j++ {
+			if tetromino[i][j] != '.' && tetSolution[y+i][x+j] != "." {
 				return false
 			}
 		}
