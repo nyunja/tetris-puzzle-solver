@@ -134,31 +134,31 @@ func backtrackTetris(tetrominos [][]string, tetSolution [][]string, index int) b
 			if fits(tetromino, tetSolution, m, k) {
 				for i := 0; i < len(tetromino); i++ {
 					for j := 0; j < len(tetromino[0]); j++ {
-						if k+len(tetromino) > len(tetSolution) || m+len(tetromino[0]) > len(tetromino[0]) {
-							break
-						}
-						// if tetromino[i][j] != '.' && tetSolution[k+i][m+j] != "." {
-						// 	continue
-						// }
-						if tetromino[i][j] != '.' && tetSolution[k+i][m+j] == "." {
-							tetSolution[k+i][m+j] = string(tetromino[i][j])
-						}
-						// fmt.Printf("%s %s\n", string(tetromino[i][j]), tetSolution[k+i][m+j])
+						tetSolution[k+i][m+j] = string(tetromino[i][j])
+					}
+				}
+				if backtrackTetris(tetrominos, tetSolution, index+1) {
+					return true
+				}
+				for i := 0; i < len(tetromino); i++ {
+					for j := 0; j < len(tetromino[0]); j++ {
+						tetSolution[k+i][m+j] = "."
 					}
 				}
 			}
 		}
 	}
-	return true
+	return false
 }
 
 func solveTetris(tet *Tetrominos) (*Tetrominos, error) {
 	var maxWidth, maxHeight int = calculateInitialGridSize(tet)
-	gridIncrement := 2
+	gridIncrement := 1
 	// fails := 0
 	// length := int(math.Sqrt(float64(maxWidth * maxHeight)))
 	for {
 		tetSolution := createGrid(maxWidth, maxHeight)
+		fmt.Printf("tetSolution:%#v \n", tetSolution)
 
 		if backtrackTetris(tet.tet, tetSolution, 0) {
 			return &Tetrominos{tet: tetSolution}, nil
@@ -168,7 +168,7 @@ func solveTetris(tet *Tetrominos) (*Tetrominos, error) {
 		// 	gridIncrement *= 2
 		// 	fails =0
 		// }
-		gridIncrement *= 2
+		//gridIncrement *= 2
 		maxWidth += gridIncrement
 		maxHeight += gridIncrement
 	}
