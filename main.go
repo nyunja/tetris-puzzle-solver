@@ -31,7 +31,7 @@ func main() {
 	}
 	for _, t := range solvedTetrominos.Tet {
 		for _, s := range t {
-			fmt.Printf("%s",s)
+			fmt.Printf("%s", s)
 		}
 		fmt.Println()
 	}
