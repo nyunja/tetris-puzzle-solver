@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 	"tetris/lib"
+	"time"
 )
 
 func main() {
