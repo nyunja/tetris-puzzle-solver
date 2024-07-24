@@ -12,6 +12,88 @@ This project aims to solve Tetris puzzles by finding the optimal arrangement of 
     ```bash
     go run main.go path/to/tetromino_file.txt
     ```
+2. Example of a text File: sample.txt
+
+```
+#...
+#...
+#...
+#...
+
+....
+....
+..##
+..##
+```
+
+If it isn't possible to form a complete square, the program should leave spaces between the tetrominoes. For example:
+
+```
+ABB.
+ABB.
+A...
+A...
+```
+
+
+Another example of a sample.txt
+```
+...#
+...#
+...#
+...#
+
+....
+....
+....
+####
+
+.###
+...#
+....
+....
+
+....
+..##
+.##.
+....
+
+....
+.##.
+.##.
+....
+
+....
+....
+##..
+.##.
+
+##..
+.#..
+.#..
+....
+
+....
+###.
+.#..
+....
+```
+
+```bash
+ go run . sample.txt | cat -e
+```
+
+The output should look like this:
+```
+ABBBB.
+ACCCEE
+AFFCEE
+A.FFGG
+HHHDDG
+.HDD.G
+```
+
+
 
 ## Contributing
 
