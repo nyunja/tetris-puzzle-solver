@@ -16,7 +16,7 @@ func TestInputFileReader(t *testing.T) {
 			name: "InputFileReader",
 			file: "sample1.txt",
 			want: &Tetrominos{Tet: [][]string{
-				{"....","AAA.",".A..","...."},
+				{"....", "AAA.", ".A..", "...."},
 			}},
 			wantErr: false,
 		},

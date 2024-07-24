@@ -12,7 +12,7 @@ func Test_hasSuffix(t *testing.T) {
 		args args
 		want bool
 	}{
-		{name: "hasSuffix", args: args{"hello.txt", ".txt"}, want: true,},
+		{name: "hasSuffix", args: args{"hello.txt", ".txt"}, want: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -25,11 +25,11 @@ func Test_hasSuffix(t *testing.T) {
 
 func Test_isValidFile(t *testing.T) {
 	tests := []struct {
-		name string
+		name     string
 		fileName string
-		want bool
+		want     bool
 	}{
-		{name: "hasSuffix", fileName: "hello.txt", want: true,},
+		{name: "hasSuffix", fileName: "hello.txt", want: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -39,4 +39,3 @@ func Test_isValidFile(t *testing.T) {
 		})
 	}
 }
-

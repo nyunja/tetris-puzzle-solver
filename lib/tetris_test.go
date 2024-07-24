@@ -68,14 +68,14 @@ func TestCleanTetromino(t *testing.T) {
 		want    *Tetrominos
 		wantErr bool
 	}{
-		{name: "CleanTetromino", 
-		args: args{tet: &Tetrominos{[][]string{
-			{"...#", "...#", "...#", "...#"},
-		}}}, 
-		want: &Tetrominos{[][]string{
-			{"#", "#", "#", "#"},
-		}}, 
-		wantErr: false},
+		{name: "CleanTetromino",
+			args: args{tet: &Tetrominos{[][]string{
+				{"...#", "...#", "...#", "...#"},
+			}}},
+			want: &Tetrominos{[][]string{
+				{"#", "#", "#", "#"},
+			}},
+			wantErr: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
