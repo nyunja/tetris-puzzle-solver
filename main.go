@@ -30,8 +30,12 @@ func main() {
 		return
 	}
 	for _, t := range solvedTetrominos.Tet {
-		fmt.Println(t)
+		for _, s := range t {
+			fmt.Printf("%s",s)
+		}
+		fmt.Println()
 	}
 	elapsed := time.Since(start)
+	fmt.Println()
 	fmt.Printf("Elapsed time: %s\n", elapsed)
 }
