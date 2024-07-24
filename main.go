@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"strings"
+	"time"
 )
 
 type Tetrominos struct {
@@ -23,6 +25,7 @@ var (
 )
 
 func main() {
+	start := time.Now()
 	if len(os.Args) != 2 {
 		fmt.Println("error: please provide the path to the tetromino file only")
 		return
@@ -33,7 +36,6 @@ func main() {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println(tet)
 	cleanTetrominos, err := cleanTetromino(tet)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -47,6 +49,8 @@ func main() {
 	for _, t := range solvedTetrominos.tet {
 		fmt.Println(t)
 	}
+	elapsed := time.Since(start)
+	fmt.Printf("Elapsed time: %s\n", elapsed)
 }
 
 func inputFileReader(fileName string) (*Tetrominos, error) {
@@ -67,9 +71,9 @@ func inputFileReader(fileName string) (*Tetrominos, error) {
 	)
 	for scanner.Scan() {
 		line := scanner.Text()
-		if len(line) != 4 {
-			continue
-		}
+		// if len(line) != 4 {
+		// 	continue
+		// }
 		if tetrominoLabel > 'Z' {
 			return nil, ErrInvalidTetFile
 		}
@@ -87,12 +91,14 @@ func inputFileReader(fileName string) (*Tetrominos, error) {
 			}
 		}
 		linesRead++
-		tetromino = append(tetromino, newLine)
-		if linesRead == 4 {
+		if linesRead == 5 {
 			tetrominos = append(tetrominos, tetromino)
+
 			tetromino = nil
 			linesRead = 0
 			tetrominoLabel++
+		} else {
+			tetromino = append(tetromino, newLine)
 		}
 	}
 	if err := scanner.Err(); err != nil {
@@ -110,7 +116,8 @@ func calculateInitialGridSize(tet *Tetrominos) (int, int) {
 		maxHeight = max(maxHeight, len(tetromino))
 		maxWidth = max(maxWidth, len(tetromino[0]))
 	}
-	return maxWidth, maxHeight
+	maxLength := int(math.Sqrt(float64(maxWidth)*float64(maxHeight)))
+	return maxLength, maxLength
 }
 
 func createGrid(maxWidth, maxHeight int) [][]string {
@@ -133,16 +140,21 @@ func backtrackTetris(tetrominos [][]string, tetSolution [][]string, index int) b
 		for m := 0; m < len(tetSolution); m++ {
 			if fits(tetromino, tetSolution, m, k) {
 				for i := 0; i < len(tetromino); i++ {
-					for j := 0; j < len(tetromino[0]); j++ {
-						tetSolution[k+i][m+j] = string(tetromino[i][j])
+					for j := 0; j < len(tetromino[i]); j++ {
+						if tetromino[i][j] != '.' {
+							tetSolution[k+i][m+j] = string(tetromino[i][j])
+							// fmt.Println(k+i, m+j, tetSolution[k+i][m+j])
+						}
 					}
 				}
 				if backtrackTetris(tetrominos, tetSolution, index+1) {
 					return true
 				}
 				for i := 0; i < len(tetromino); i++ {
-					for j := 0; j < len(tetromino[0]); j++ {
-						tetSolution[k+i][m+j] = "."
+					for j := 0; j < len(tetromino[i]); j++ {
+						if tetromino[i][j] != '.' {
+							tetSolution[k+i][m+j] = "."
+						}
 					}
 				}
 			}
@@ -153,24 +165,26 @@ func backtrackTetris(tetrominos [][]string, tetSolution [][]string, index int) b
 
 func solveTetris(tet *Tetrominos) (*Tetrominos, error) {
 	var maxWidth, maxHeight int = calculateInitialGridSize(tet)
-	gridIncrement := 1
-	// fails := 0
+	// gridIncrement := 1
+	fails := 0
 	// length := int(math.Sqrt(float64(maxWidth * maxHeight)))
 	for {
 		tetSolution := createGrid(maxWidth, maxHeight)
-		fmt.Printf("tetSolution:%#v \n", tetSolution)
 
 		if backtrackTetris(tet.tet, tetSolution, 0) {
 			return &Tetrominos{tet: tetSolution}, nil
 		}
-		// fails++
-		// if fails > 5 {
-		// 	gridIncrement *= 2
-		// 	fails =0
+		fails++
+		
+		if fails > 500 {
+			maxHeight++
+			maxWidth++
+			fails =0
+		}
+		// if fails > 10 {
+		// 	maxWidth += gridIncrement
+		// 	// fails =0
 		// }
-		//gridIncrement *= 2
-		maxWidth += gridIncrement
-		maxHeight += gridIncrement
 	}
 }
 
@@ -203,17 +217,14 @@ func cleanTetromino(tet *Tetrominos) (*Tetrominos, error) {
 }
 
 func removeDotLines(tetromino []string) []string {
-	fmt.Println(tetromino)
 	for y := 0; y < len(tetromino); y++ {
 		if strings.Count(tetromino[y], ".") == len(tetromino[y]) {
 			tetromino = append(tetromino[:y], tetromino[y+1:]...)
 			y--
 		}
 	}
-	fmt.Println("horizontal: ", tetromino)
 
 	for x := 0; x < len(tetromino[0]); x++ {
-		fmt.Println(tetromino)
 		isDotColumn := true
 		for y := 0; y < len(tetromino); y++ {
 			if tetromino[y][x] != '.' {
@@ -233,10 +244,16 @@ func removeDotLines(tetromino []string) []string {
 }
 
 func isValidTetromino(tetromino []string) bool {
-	connection := 0
+	for y := 0; y < len(tetromino); y++ {
+		if len(tetromino) != 4 || len(tetromino[y]) != 4 {
+			return false
+		}
+	}
+	nonDots, connection := 0, 0
 	for y := 0; y < len(tetromino); y++ {
 		for x := 0; x < len(tetromino[y]); x++ {
 			if tetromino[y][x] != '.' {
+				nonDots++
 				if y > 0 && tetromino[y-1][x] != '.' {
 					connection++
 				}
@@ -252,11 +269,11 @@ func isValidTetromino(tetromino []string) bool {
 			}
 		}
 	}
-
-	if connection >= 6 && connection <= 8 {
-		return true
+	if (connection < 6 || connection > 8) || nonDots != 4 {
+		return false
 	}
-	return false
+
+	return true
 }
 
 func hasSuffix(s, suffix string) bool {
