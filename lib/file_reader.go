@@ -12,6 +12,7 @@ var (
 	ErrInvalidTetType = errors.New("ERROR")
 )
 
+// reads input file and returns pointer to a Tetromino which is a slice of tetrominos and an error
 func InputFileReader(fileName string) (*Tetrominos, error) {
 	if !isValidFile(fileName) {
 		return nil, ErrInvalidTetFile
@@ -30,9 +31,6 @@ func InputFileReader(fileName string) (*Tetrominos, error) {
 	)
 	for scanner.Scan() {
 		line := scanner.Text()
-		// if len(line) != 4 {
-		// 	continue
-		// }
 		if tetrominoLabel > 'Z' {
 			return nil, ErrInvalidTetFile
 		}
@@ -43,7 +41,7 @@ func InputFileReader(fileName string) (*Tetrominos, error) {
 		}
 		newLine := ""
 		for _, ch := range line {
-			if ch == '#' {
+			if ch == '#' { // changes all # to a the corresponding tetrominoLabel
 				newLine += string(tetrominoLabel)
 			} else {
 				newLine += string(ch)
@@ -60,6 +58,7 @@ func InputFileReader(fileName string) (*Tetrominos, error) {
 			tetromino = append(tetromino, newLine)
 		}
 	}
+	// checks for errors during reading and invalid file contents
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}

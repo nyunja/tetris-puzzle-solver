@@ -9,6 +9,7 @@ type Tetrominos struct {
 	Tet [][]string
 }
 
+// estimates initila grid size
 func calculateInitialGridSize(tet *Tetrominos) (int, int) {
 	maxWidth, maxHeight := 0, 0
 	for _, tetromino := range tet.Tet {
@@ -19,6 +20,7 @@ func calculateInitialGridSize(tet *Tetrominos) (int, int) {
 	return maxLength, maxLength
 }
 
+// creates a gris to be used to solve the tetrominos puzzle
 func createGrid(maxWidth, maxHeight int) [][]string {
 	tetSolution := make([][]string, maxHeight)
 	for i := 0; i < maxHeight; i++ {
@@ -30,6 +32,7 @@ func createGrid(maxWidth, maxHeight int) [][]string {
 	return tetSolution
 }
 
+// returns valid tetrominos and an error
 func CleanTetromino(tet *Tetrominos) (*Tetrominos, error) {
 	var tetrominos [][]string
 	for _, tetromino := range tet.Tet {
@@ -41,6 +44,7 @@ func CleanTetromino(tet *Tetrominos) (*Tetrominos, error) {
 	return &Tetrominos{Tet: tetrominos}, nil
 }
 
+// removes all empty or '.' lines vertically or horizontally
 func removeDotLines(tetromino []string) []string {
 	for y := 0; y < len(tetromino); y++ {
 		if strings.Count(tetromino[y], ".") == len(tetromino[y]) {
@@ -68,6 +72,7 @@ func removeDotLines(tetromino []string) []string {
 	return tetromino
 }
 
+// checks that the tetromino is 4x4, the non-dots are 4 in total and are connected to each
 func isValidTetromino(tetromino []string) bool {
 	for y := 0; y < len(tetromino); y++ {
 		if len(tetromino) != 4 || len(tetromino[y]) != 4 {
